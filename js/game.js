@@ -1,8 +1,8 @@
-var canvas = document.createElement("canvas");
+var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
-canvas.width = 512;
-canvas.height = 480;
-document.body.appendChild(canvas);
+canvas.width = 1280;
+canvas.height = 720;
+//document.body.appendChild(canvas);
 
 var gravity = 1000;
 var jumpSpeed = 300;
@@ -12,8 +12,8 @@ var VERTICAL = 1;
 var RIGHT = 0;
 var LEFT = 1;
 
-var heroHeight = 32;
 
+var seaLevel = canvas.height * 0.8;
 // Background image
 /*var bgReady = false;
 var bgImage = new Image();
@@ -30,20 +30,29 @@ heroImage.onload = function () {
 heroImage.src = "images/hero.png";
 
 var hero = {
-	speed: 256, // movement in pixels per second
+	speed: 200, // movement in pixels per second
 	jumpSpeed: 0,
-	x: 0,
-	y: canvas.height/2 - heroHeight,
-	isJumping: false
+	x: 10,
+	y: canvas.height/2 - 32,
+	isJumping: false,
+	height: 32,
+	width: 32
 };
 
-var seaLevel = canvas.height/2;
+function Obstacle(x, y, width, height, speed)
+{
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.jumpSpeed = jumpSpeed;
+}
 
 var level = [[0, 0], [200, 0], [200, 30], [230, 30], [230, -30], [310, -30], [310, 0], [canvas.width, 0]];
 
 var riseLevelToSeaLevel = function(level)
 {
-	for(i = 0; i < level.length; i++)
+	for(var i = 0; i < level.length; i++)
 	{
 		level[i][1] = seaLevel - level[i][1];
 		console.log("(%i, %i)", level[i][0], level[i][1]);
@@ -52,24 +61,42 @@ var riseLevelToSeaLevel = function(level)
 
 riseLevelToSeaLevel(level);
 
+var ob1 = new Obstacle(400, canvas.height/2, 20, 20, 0);
+var ob2 = new Obstacle(450, canvas.height/2, 20, 20, 0);
 
-var heightUnderHero = function()
+var tempObjects = [hero, ob1, ob2];
+
+for(var i = 0; i < tempObjects.length; i++)
+{
+	console.log("object: %i, y: %i", i, tempObjects[i].y);
+}
+
+var drawObjects = function()
+{
+	for(var i = 0; i < tempObjects.length;i++)
+	{
+		ctx.fillStyle = "black";
+		ctx.fillRect(tempObjects[i][0], tempObjects[i][1], tempObjects[i][2], tempObjects[i][3]);
+	}
+}
+
+var heightUnder = function(x, width)
 {
 	var maxHeight = canvas.height;
-	for(i = 0; i < level.length - 1; i++)
+	for(var i = 0; i < level.length - 1; i++)
 	{
-		if((hero.x >= level[i][0] && hero.x <= level[i+1][0]) ||
-			(hero.x + heroImage.width >= level[i][0] && hero.x + heroImage.width <= level[i+1][0]) ||
-			(hero.x <= level[i][0] && hero.x + heroImage.width >= level[i+1][0]))
+		if((x >= level[i][0] && x <= level[i+1][0]) ||
+			(x + width >= level[i][0] && x + width <= level[i+1][0]) ||
+			(x <= level[i][0] && x + width >= level[i+1][0]))
 		{
 			maxHeight = Math.min(maxHeight, level[i][1],level[i+1][1]);
 		}
 	}
 	//console.log("heightUnderHero = %i", canvas.height - maxHeight);
-	return  maxHeight - heroHeight;
+	return  maxHeight - hero.height;
 }
 
-function drawBubble(ctx, x, y, w, h, radius)
+function drawBubble(ctx, x, y, w, h, radius, text)
 {
 	y = y - h - radius;
 	ctx.beginPath();
@@ -91,11 +118,11 @@ function drawBubble(ctx, x, y, w, h, radius)
 
 var horizontalCollision = function()
 {
-	for(i = 0; i < level.length - 1; i++)
+	for(var i = 0; i < level.length - 1; i++)
 	{
 		//console.log("Hero(%i, %i), level(%i, %i), level+1(%i, %i)", hero.x, hero.y, level[i][0], level[i][1], level[i+1][0], level[i+1][1]);
 		if(level[i][0] == level[i+1][0] && level[i][0] > hero.x && level[i][0] < (hero.x + heroImage.width) && level[i][1] != level[i+1][1] && 
-			Math.min(level[i][1], level[i+1][1]) < (hero.y + heroHeight) && Math.max(level[i][1], level[i+1][1]) > hero.y)
+			Math.min(level[i][1], level[i+1][1]) < (hero.y + hero.height) && Math.max(level[i][1], level[i+1][1]) > hero.y)
 		{
 			//right or left
 			if(level[i][0] < hero.x + heroImage.width/2)
@@ -156,42 +183,40 @@ var update = function (modifier) {
 
 	//console.log("%i", hero.y);
 
-	if(hero.y <= heightUnderHero()) //is airborn
+	for(var i = 0; i < tempObjects.length; i++)
 	{
-		//hero.y = canvas.height/2 - hero.jumpHeight * Math.sin(Math.PI * (Date.now() - hero.jumpStart) / 600);
-		//console.log("Jumping height: %i", hero.y);
-
-		/*if(hero.y > canvas.height/2)
+		//console.log("Object index: %i, x: %i y: %i", i, tempObjects[i].x, tempObjects[i].y);
+		console.log("i fora do if: %i", i);
+		if(tempObjects[i].y < heightUnder(tempObjects[i].x, tempObjects[i].width))
 		{
-			hero.jumping = false;
-			hero.y = canvas.height/2;
-		}*/
+			console.log("i dentro do if: %i", i);
+			//console.log("Object index: %i, x: %i y: %i", i, tempObjects[i].x, tempObjects[i].y);
+			tempObjects[i].y -= tempObjects[i].jumpSpeed*modifier;
+			tempObjects[i].jumpSpeed -= gravity*modifier;
 
-		hero.y -= hero.jumpSpeed*modifier;
-		hero.jumpSpeed -= gravity*modifier;
 
-		if(hero.y > heightUnderHero()) //has landed
-		{
-			hero.jumpSpeed = 0;
-			hero.y = heightUnderHero();
-			hero.isJumping = false;
+			if(tempObjects[i].y > heightUnder(tempObjects[i].x, tempObjects[i].width)) //has landed
+			{
+				tempObjects[i].jumpSpeed = 0;
+				tempObjects[i].y = heightUnder(tempObjects[i].x, tempObjects[i].width);
+				tempObjects[i].isJumping = false; //only work for hero
+			}
 		}
-
 	}
 
 	if (Key.isDown(Key.DOWN)) { // Player holding down
 		//hero.y += hero.speed * modifier;
 	}
-	if (Key.isDown(Key.LEFT) && hero.x > 0) { // Player holding left
+	if (Key.isDown(Key.LEFT)) { // Player holding left
 		hero.x -= hero.speed * modifier;
-		if(horizontalCollision() == LEFT)
+		if(horizontalCollision() == LEFT || hero.x < 0)
 		{
 			hero.x += hero.speed * modifier;
 		}
 	}
-	if (Key.isDown(Key.RIGHT) && hero.x < canvas.width - heroImage.width) { // Player holding right
+	if (Key.isDown(Key.RIGHT)) { // Player holding right
 		hero.x += hero.speed * modifier;
-		if(horizontalCollision() == RIGHT)
+		if(horizontalCollision() == RIGHT || hero.x + heroImage.width > canvas.width)
 		{
 			hero.x -= hero.speed * modifier;
 		}
@@ -213,17 +238,17 @@ var render = function () {
 
 	ctx.beginPath();
 	//ctx.moveTo(level[0][0],level[0][1] + canvas.height/2 + heroImage.height);
-	for(i=0; i < level.length; i++)
+	for(var i=0; i < level.length; i++)
 	{
 		ctx.lineTo(level[i][0], level[i][1]);
 	}
 	//ctx.lineTo(512,canvas.height/2 + heroImage.height);
 	ctx.stroke();
 
-	drawBubble(ctx, hero.x, hero.y, 60, 40, 10);
+	drawObjects();
 
-	//test box
-	//ctx.fillRect(canvas.width/2,canvas.height/2,testObstacle.width,testObstacle.height);
+	drawBubble(ctx, hero.x, hero.y, 60, 40, 10, "Test text, herp derp.");
+
 
 	// Score
 	/*ctx.fillStyle = "rgb(250, 250, 250)";
@@ -232,18 +257,6 @@ var render = function () {
 	ctx.textBaseline = "top";
 	ctx.fillText("Goblins caught: " + monstersCaught, 32, 32);*/
 };
-
-var heroColision = function(axis)
-{
-	if(axis == HORIZONTAL)
-	{
-		
-	}
-	else if(axis == VERTICAL)
-	{
-
-	}
-}
 
 // The main game loop
 var main = function () {
