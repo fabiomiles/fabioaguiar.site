@@ -62,38 +62,33 @@ var riseLevelToSeaLevel = function(level)
 riseLevelToSeaLevel(level);
 
 var ob1 = new Obstacle(400, canvas.height/2, 20, 20, 0);
-var ob2 = new Obstacle(450, canvas.height/2, 20, 20, 0);
+var ob2 = new Obstacle(600, canvas.height/2, 20, 20, 0);
 
 var tempObjects = [hero, ob1, ob2];
 
-for(var i = 0; i < tempObjects.length; i++)
-{
-	console.log("object: %i, y: %i", i, tempObjects[i].y);
-}
-
 var drawObjects = function()
 {
-	for(var i = 0; i < tempObjects.length;i++)
+	for(var i = 1; i < tempObjects.length;i++)
 	{
 		ctx.fillStyle = "black";
-		ctx.fillRect(tempObjects[i][0], tempObjects[i][1], tempObjects[i][2], tempObjects[i][3]);
+		ctx.fillRect(tempObjects[i].x, tempObjects[i].y, tempObjects[i].width, tempObjects[i].height);
 	}
 }
 
-var heightUnder = function(x, width)
+var heightUnder = function(obstacle)
 {
 	var maxHeight = canvas.height;
 	for(var i = 0; i < level.length - 1; i++)
 	{
-		if((x >= level[i][0] && x <= level[i+1][0]) ||
-			(x + width >= level[i][0] && x + width <= level[i+1][0]) ||
-			(x <= level[i][0] && x + width >= level[i+1][0]))
+		if((obstacle.x >= level[i][0] && obstacle.x <= level[i+1][0]) ||
+			(obstacle.x + obstacle.width >= level[i][0] && obstacle.x + obstacle.width <= level[i+1][0]) ||
+			(obstacle.x <= level[i][0] && obstacle.x + obstacle.width >= level[i+1][0]))
 		{
 			maxHeight = Math.min(maxHeight, level[i][1],level[i+1][1]);
 		}
 	}
 	//console.log("heightUnderHero = %i", canvas.height - maxHeight);
-	return  maxHeight - hero.height;
+	return  maxHeight - obstacle.height;
 }
 
 function drawBubble(ctx, x, y, w, h, radius, text)
@@ -186,22 +181,23 @@ var update = function (modifier) {
 	for(var i = 0; i < tempObjects.length; i++)
 	{
 		//console.log("Object index: %i, x: %i y: %i", i, tempObjects[i].x, tempObjects[i].y);
-		console.log("i fora do if: %i", i);
-		if(tempObjects[i].y < heightUnder(tempObjects[i].x, tempObjects[i].width))
+		//console.log("i: %i, y: %y, height under: %i", i, tempObjects[i].y, heightUnder(tempObjects[i]));
+		if(tempObjects[i].y <= heightUnder(tempObjects[i]))
 		{
-			console.log("i dentro do if: %i", i);
+			//console.log("i dentro do if: %i", i);
 			//console.log("Object index: %i, x: %i y: %i", i, tempObjects[i].x, tempObjects[i].y);
 			tempObjects[i].y -= tempObjects[i].jumpSpeed*modifier;
 			tempObjects[i].jumpSpeed -= gravity*modifier;
 
 
-			if(tempObjects[i].y > heightUnder(tempObjects[i].x, tempObjects[i].width)) //has landed
+			if(tempObjects[i].y > heightUnder(tempObjects[i])) //has landed
 			{
 				tempObjects[i].jumpSpeed = 0;
-				tempObjects[i].y = heightUnder(tempObjects[i].x, tempObjects[i].width);
+				tempObjects[i].y = heightUnder(tempObjects[i]);
 				tempObjects[i].isJumping = false; //only work for hero
 			}
 		}
+
 	}
 
 	if (Key.isDown(Key.DOWN)) { // Player holding down
