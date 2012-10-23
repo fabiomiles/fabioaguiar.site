@@ -45,8 +45,18 @@ function Obstacle(x, y, width, height, speed)
 	this.y = y;
 	this.width = width;
 	this.height = height;
-	this.jumpSpeed = jumpSpeed;
+	this.jumpSpeed = 0;
 }
+
+function Bubble(target, width, height, text, triggerObstacle)
+{
+	this.target = target;
+	this.width = width;
+	this.height = height;
+	this.text = text;
+	this.triggerObstacle = triggerObstacle;
+}
+
 
 var level = [[0, 0], [200, 0], [200, 30], [230, 30], [230, -30], [310, -30], [310, 0], [canvas.width, 0]];
 
@@ -66,11 +76,16 @@ var ob2 = new Obstacle(600, canvas.height/2, 20, 20, 0);
 
 var tempObjects = [hero, ob1, ob2];
 
+var bub1 = new Bubble(hero, 60, 40, "some text 1", ob1);
+var bub2 = new Bubble(hero, 60, 40, "some text 2", ob2);
+
+var bubbles = [bub1, bub2];
+
 var drawObjects = function()
 {
 	for(var i = 1; i < tempObjects.length;i++)
 	{
-		ctx.fillStyle = "black";
+		//ctx.fillStyle = "black";
 		ctx.fillRect(tempObjects[i].x, tempObjects[i].y, tempObjects[i].width, tempObjects[i].height);
 	}
 }
@@ -91,24 +106,34 @@ var heightUnder = function(obstacle)
 	return  maxHeight - obstacle.height;
 }
 
-function drawBubble(ctx, x, y, w, h, radius, text)
+function drawBubble(bubble)
 {
-	y = y - h - radius;
+	radius = 5;
+
+	tempY = bubble.target.y - bubble.height - 2*radius;
+	tempX = bubble.target.x + bubble.target.width/2;
+
 	ctx.beginPath();
 	ctx.strokeStyle="black";
   	ctx.lineWidth="2";
-  	ctx.moveTo(x + radius, y);
-  	ctx.lineTo(x + w - radius, y);
-  	ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-  	ctx.lineTo(x + w, y + h - radius);
-  	ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-  	ctx.lineTo(x + 2*radius, y + h);
-  	ctx.lineTo(x, y + h + radius);
-  	ctx.lineTo(x + radius, y + h);
-  	ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-  	ctx.lineTo(x, y + radius);
-  	ctx.quadraticCurveTo(x, y, x + radius, y);
+  	ctx.moveTo(tempX + radius, tempY);
+  	ctx.lineTo(tempX + bubble.width - radius, tempY);
+  	ctx.quadraticCurveTo(tempX + bubble.width, tempY, tempX + bubble.width, tempY + radius);
+  	ctx.lineTo(tempX + bubble.width, tempY + bubble.height - radius);
+  	ctx.quadraticCurveTo(tempX + bubble.width, tempY + bubble.height, tempX + bubble.width - radius, tempY + bubble.height);
+  	ctx.lineTo(tempX + 2*radius, tempY + bubble.height);
+  	ctx.lineTo(tempX, tempY + bubble.height + radius);
+  	ctx.lineTo(tempX + radius, tempY + bubble.height);
+  	ctx.quadraticCurveTo(tempX, tempY + bubble.height, tempX, tempY + bubble.height - radius);
+  	ctx.lineTo(tempX, tempY + radius);
+  	ctx.quadraticCurveTo(tempX, tempY, tempX + radius, tempY);
   	ctx.stroke();
+
+  	ctx.font = '11px Arial';
+    ctx.textAlign = 'center';
+    //ctx.fillStyle = 'blue';
+    ctx.fillText(bubble.text, tempX + (bubble.width / 2), bubble.target.y - (bubble.height / 2) - radius)
+
 }
 
 var horizontalCollision = function()
@@ -126,8 +151,26 @@ var horizontalCollision = function()
 				return RIGHT;
 		}
 	}
-	console.log("no collision");
+	//console.log("no collision");
 	return -1;
+}
+
+var heroInBubbleTrigger = function(bubble)
+{
+	//console.log("Bubble triger Y = %i", bubble.triggerObstacle.y);
+	if((hero.x > bubble.triggerObstacle.x + bubble.triggerObstacle.width ||
+		bubble.triggerObstacle.x > hero.x + hero.width) ||
+		(hero.y > bubble.triggerObstacle.y + bubble.triggerObstacle.height ||
+		bubble.triggerObstacle.y > hero.y + hero.height))
+	{
+		//console.log("Not in bubble trigger");
+		return false;
+	}
+	else
+	{
+		//console.log("In bubble trigger");
+		return true;
+	}
 }
 
 // Handle keyboard controls
@@ -243,7 +286,13 @@ var render = function () {
 
 	drawObjects();
 
-	drawBubble(ctx, hero.x, hero.y, 60, 40, 10, "Test text, herp derp.");
+	for(var i = 0; i < bubbles.length; i++)
+	{
+		if(heroInBubbleTrigger(bubbles[i]))
+		{
+			drawBubble(bubbles[i]);
+		}
+	}
 
 
 	// Score
