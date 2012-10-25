@@ -13,7 +13,7 @@ var RIGHT = 0;
 var LEFT = 1;
 
 
-var seaLevel = canvas.height * 0.8;
+var seaLevel = 640;
 // Background image
 /*var bgReady = false;
 var bgImage = new Image();
@@ -36,16 +36,19 @@ var hero = {
 	y: canvas.height/2 - 32,
 	isJumping: false,
 	height: 32,
-	width: 32
+	width: 32,
+	pinned: false
 };
 
-function Obstacle(x, y, width, height, speed)
+function Obstacle(x, y, width, height, speed, ghostly, pinned)
 {
 	this.x = x;
 	this.y = y;
 	this.width = width;
 	this.height = height;
 	this.jumpSpeed = 0;
+	this.ghostly = ghostly;
+	this.pinned = pinned;
 }
 
 function Bubble(target, width, height, text, triggerObstacle)
@@ -58,23 +61,24 @@ function Bubble(target, width, height, text, triggerObstacle)
 }
 
 
-var level = [[0, 0], [200, 0], [200, 30], [230, 30], [230, -30], [310, -30], [310, 0], [canvas.width, 0]];
+var level = [[0, 640], [200, 640], [200, 610], [230, 610], [230, 670], [310, 670], [310, 640], [canvas.width, 640]];
 
-var riseLevelToSeaLevel = function(level)
+/*var riseLevelToSeaLevel = function(level)
 {
 	for(var i = 0; i < level.length; i++)
 	{
 		level[i][1] = seaLevel - level[i][1];
 		console.log("(%i, %i)", level[i][0], level[i][1]);
 	}
-}
+}*/
 
-riseLevelToSeaLevel(level);
+//riseLevelToSeaLevel(level);
 
-var ob1 = new Obstacle(400, canvas.height/2, 20, 20, 0);
-var ob2 = new Obstacle(600, canvas.height/2, 20, 20, 0);
+var ob1 = new Obstacle(400, canvas.height/2, 20, 20, 0, true, false);
+var ob2 = new Obstacle(600, canvas.height/2, 20, 20, 0, true, false);
+var ob3 = new Obstacle(310, 570, 50, 20, 0, false, true);
 
-var tempObjects = [hero, ob1, ob2];
+var tempObjects = [hero, ob1, ob2, ob3];
 
 var bub1 = new Bubble(hero, 60, 40, "some text 1", ob1);
 var bub2 = new Bubble(hero, 60, 40, "some text 2", ob2);
@@ -90,7 +94,7 @@ var drawObjects = function()
 	}
 }
 
-var heightUnder = function(obstacle)
+/*var heightUnder = function(obstacle)
 {
 	var maxHeight = canvas.height;
 	for(var i = 0; i < level.length - 1; i++)
@@ -104,7 +108,7 @@ var heightUnder = function(obstacle)
 	}
 	//console.log("heightUnderHero = %i", canvas.height - maxHeight);
 	return  maxHeight - obstacle.height;
-}
+}*/
 
 function drawBubble(bubble)
 {
@@ -137,7 +141,8 @@ function drawBubble(bubble)
 }
 
 var horizontalCollision = function()
-{
+{	
+	//level
 	for(var i = 0; i < level.length - 1; i++)
 	{
 		//console.log("Hero(%i, %i), level(%i, %i), level+1(%i, %i)", hero.x, hero.y, level[i][0], level[i][1], level[i+1][0], level[i+1][1]);
@@ -146,11 +151,44 @@ var horizontalCollision = function()
 		{
 			//right or left
 			if(level[i][0] < hero.x + heroImage.width/2)
+			{
+				hero.x = level[i][0];
+				console.log("Colides Left");
 				return LEFT;
+			}
 			else
+			{
+				hero.x = level[i][0] - hero.width;
+				console.log("Colides Right");
 				return RIGHT;
+			}
 		}
 	}
+
+	for(var i = 1; i < tempObjects.length; i++)
+	{
+		if(!tempObjects[i].ghostly)
+		{
+			if((hero.y > tempObjects[i].y && hero.y < tempObjects[i].y + tempObjects[i].height) ||
+				(hero.y + hero.height > tempObjects[i].y && hero.y + hero.height < tempObjects[i].y + tempObjects[i].height) ||
+				(tempObjects[i].y > hero.y && tempObjects[i].y < hero.y + hero.height) ||
+				(tempObjects[i].y + tempObjects[i].height < hero.y && tempObjects[i].y + tempObjects[i].height > hero.y + hero.height))
+			{
+				
+				if(hero.x <= tempObjects[i].x + tempObjects[i].width && hero.x + hero.width > tempObjects[i].x + tempObjects[i].width)
+				{
+					hero.x = tempObjects[i].x + tempObjects[i].width;
+					return LEFT;
+				}
+				else if(hero.x + hero.width >= tempObjects[i].x && hero.x < tempObjects[i].x)
+				{
+					hero.x = tempObjects[i].x + tempObjects[i].width - hero.width;
+					return RIGHT;
+				}
+			}
+		}
+	}
+
 	//console.log("no collision");
 	return -1;
 }
@@ -171,6 +209,63 @@ var heroInBubbleTrigger = function(bubble)
 		//console.log("In bubble trigger");
 		return true;
 	}
+}
+
+var intersectsLevelorObjectVertically = function(gameObject)
+{
+	if(gameObject.jumpSpeed <= 0) //going down
+	{
+		//objects
+		for(var i = 1; i < tempObjects.length; i++)
+		{
+			if(!tempObjects[i].ghostly &&
+				(gameObject.x < tempObjects[i].x + tempObjects[i].width && gameObject.x > tempObjects[i].x ||
+				gameObject.x + gameObject.width > tempObjects[i].x && gameObject.x + gameObject.width < tempObjects[i].x + tempObjects[i].width) &&
+				gameObject.y + gameObject.height > tempObjects[i].y &&
+				gameObject.y < tempObjects[i].y)
+			{
+				gameObject.y = tempObjects[i].y - gameObject.height;
+				return true;
+			}
+		}
+
+		//level
+		var maxHeight = canvas.height;
+		for(var i = 0; i < level.length - 1; i++)
+		{
+			if((gameObject.x > level[i][0] && gameObject.x < level[i+1][0]) ||
+				(gameObject.x + gameObject.width > level[i][0] && gameObject.x + gameObject.width < level[i+1][0]) ||
+				(gameObject.x < level[i][0] && gameObject.x + gameObject.width > level[i+1][0]))
+			{
+				maxHeight = Math.min(maxHeight, level[i][1],level[i+1][1]);
+			}
+		}
+
+		if(maxHeight < gameObject.y + gameObject.height)
+		{
+			gameObject.y = maxHeight - gameObject.height;
+			return true;
+		}
+
+	}
+	else if(gameObject.jumpSpeed > 0) //going up
+	{
+		//objects
+		for(var i = 1; i < tempObjects.length; i++)
+		{
+			if(!tempObjects[i].ghostly &&
+				(gameObject.x < tempObjects[i].x + tempObjects[i].width && gameObject.x > tempObjects[i].x ||
+				gameObject.x + gameObject.width > tempObjects[i].x && gameObject.x + gameObject.width < tempObjects[i].x + tempObjects[i].width) &&
+				gameObject.y <= tempObjects[i].y + tempObjects[i].height &&
+				gameObject.y > tempObjects[i].y)
+			{
+				gameObject.y = tempObjects[i].y + tempObjects[i].height;
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 // Handle keyboard controls
@@ -225,7 +320,7 @@ var update = function (modifier) {
 	{
 		//console.log("Object index: %i, x: %i y: %i", i, tempObjects[i].x, tempObjects[i].y);
 		//console.log("i: %i, y: %y, height under: %i", i, tempObjects[i].y, heightUnder(tempObjects[i]));
-		if(tempObjects[i].y <= heightUnder(tempObjects[i]))
+		/*if(!tempObjects[i].pinned && tempObjects[i].y <= heightUnder(tempObjects[i]))
 		{
 			//console.log("i dentro do if: %i", i);
 			//console.log("Object index: %i, x: %i y: %i", i, tempObjects[i].x, tempObjects[i].y);
@@ -239,6 +334,25 @@ var update = function (modifier) {
 				tempObjects[i].y = heightUnder(tempObjects[i]);
 				tempObjects[i].isJumping = false; //only work for hero
 			}
+		}*/
+
+		if(!tempObjects[i].pinned && !intersectsLevelorObjectVertically(tempObjects[i]))
+		{
+			tempObjects[i].y -= tempObjects[i].jumpSpeed*modifier;
+			tempObjects[i].jumpSpeed -= gravity*modifier;
+
+			if(intersectsLevelorObjectVertically(tempObjects[i]))
+			{
+				if(tempObjects[i].jumpSpeed < 0)
+				{
+					tempObjects[i].isJumping = false;
+				}
+				tempObjects[i].jumpSpeed= 0;
+			}
+			else
+			{
+				
+			}
 		}
 
 	}
@@ -247,17 +361,17 @@ var update = function (modifier) {
 		//hero.y += hero.speed * modifier;
 	}
 	if (Key.isDown(Key.LEFT)) { // Player holding left
-		hero.x -= hero.speed * modifier;
-		if(horizontalCollision() == LEFT || hero.x < 0)
+		//if(!(horizontalCollision() == LEFT))
 		{
-			hero.x += hero.speed * modifier;
+			hero.x -= hero.speed * modifier;
+			horizontalCollision();
 		}
 	}
 	if (Key.isDown(Key.RIGHT)) { // Player holding right
-		hero.x += hero.speed * modifier;
-		if(horizontalCollision() == RIGHT || hero.x + heroImage.width > canvas.width)
+		//if(!(horizontalCollision() == RIGHT))
 		{
-			hero.x -= hero.speed * modifier;
+			hero.x += hero.speed * modifier;
+			horizontalCollision();
 		}
 	}
 };
@@ -267,24 +381,27 @@ var render = function () {
 		ctx.drawImage(bgImage, 0, 0);
 	}*/
 
+
+
 	ctx.clearRect ( 0 , 0 , canvas.width , canvas.height );
+
+	drawObjects();
 
 	if (heroReady) {
 		ctx.drawImage(heroImage, hero.x, hero.y);
 	}
 
-	ctx.fillStyle = "rgb(0, 0, 0)";
+	//ctx.fillStyle = "rgb(0, 0, 0)";
 
+	ctx.lineWidth = "2";
 	ctx.beginPath();
-	//ctx.moveTo(level[0][0],level[0][1] + canvas.height/2 + heroImage.height);
+	//ctx.moveTo(0, seaLevel);
 	for(var i=0; i < level.length; i++)
 	{
 		ctx.lineTo(level[i][0], level[i][1]);
 	}
 	//ctx.lineTo(512,canvas.height/2 + heroImage.height);
 	ctx.stroke();
-
-	drawObjects();
 
 	for(var i = 0; i < bubbles.length; i++)
 	{
