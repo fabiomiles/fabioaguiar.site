@@ -182,7 +182,7 @@ var horizontalCollision = function()
 				}
 				else if(hero.x + hero.width >= tempObjects[i].x && hero.x < tempObjects[i].x)
 				{
-					hero.x = tempObjects[i].x + tempObjects[i].width - hero.width;
+					hero.x = tempObjects[i].x  - hero.width;
 					return RIGHT;
 				}
 			}
