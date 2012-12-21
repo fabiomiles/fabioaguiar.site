@@ -5,7 +5,7 @@ canvas.height = 720;
 //document.body.appendChild(canvas);
 
 var gravity = 1000;
-var jumpSpeed = 300;
+var jumpSpeed = 450;
 
 var HORIZONTAL = 0;
 var VERTICAL = 1;
@@ -51,17 +51,16 @@ function Obstacle(x, y, width, height, speed, ghostly, pinned)
 	this.pinned = pinned;
 }
 
-function Bubble(target, width, height, text, triggerObstacle)
+function Bubble(target, text, lines, triggerObstacle)
 {
 	this.target = target;
-	this.width = width;
-	this.height = height;
 	this.text = text;
+	this.lines = lines;
 	this.triggerObstacle = triggerObstacle;
 }
 
 
-var level = [[0, 640], [200, 640], [200, 610], [230, 610], [230, 670], [310, 670], [310, 640], [canvas.width, 640]];
+var level = [[0, canvas.height*0.75], [canvas.width*0.25, canvas.height*0.75], [canvas.width*0.25, canvas.height], [canvas.width*0.30, canvas.height], [canvas.width*0.30, canvas.height*0.75], [canvas.width*0.60, canvas.height*0.75], [canvas.width*0.60, canvas.height*0.87], [canvas.width, canvas.height*0.87]];
 
 /*var riseLevelToSeaLevel = function(level)
 {
@@ -74,22 +73,56 @@ var level = [[0, 640], [200, 640], [200, 610], [230, 610], [230, 670], [310, 670
 
 //riseLevelToSeaLevel(level);
 
-var ob1 = new Obstacle(400, canvas.height/2, 20, 20, 0, true, false);
-var ob2 = new Obstacle(600, canvas.height/2, 20, 20, 0, true, false);
-var ob3 = new Obstacle(310, 570, 50, 20, 0, false, true);
+var ob1 = new Obstacle(canvas.width*0.025, canvas.height*0.60, 60, 20, 0, true, false);
+var ob2 = new Obstacle(canvas.width*0.15, canvas.height*0.60, 60, 20, 0, true, false);
+//var ob3 = new Obstacle(310, 570, 50, 20, 0, false, true);
+var ob4 = new Obstacle(canvas.width*0.60, canvas.height*0.75, canvas.width*0.35, 20, 0, false, true);
+var ob5 = new Obstacle(canvas.width*0.50, canvas.height*0.50, canvas.width*0.35, 20, 0, false, true);
+var ob6 = new Obstacle(canvas.width - 50, canvas.height*0.625, 50, 20, 0, false, true);
+var ob7 = new Obstacle(canvas.width*0.40, canvas.height*0.40, 50, 20, 0, false, true);
+var ob8 = new Obstacle(canvas.width*0.30, canvas.height*0.40, 50, 20, 0, false, true);
+var ob9 = new Obstacle(canvas.width*0.20, canvas.height*0.40, 50, 20, 0, false, true);
+var ob10 = new Obstacle(canvas.width*0.10, canvas.height*0.40, 50, 20, 0, false, true);
+var ob11 = new Obstacle(0, canvas.height*0.30, 50, 20, 0, false, true);
+var ob12 = new Obstacle(canvas.width*0.15, canvas.height*0.20, canvas.width*0.85, 20, 0, false, true);
+var ob13 = new Obstacle(canvas.width*0.35, canvas.height*0.60, 60, 20, 0, true, false);
+var ob14 = new Obstacle(canvas.width*0.45, canvas.height*0.60, 60, 20, 0, true, false);
+var ob15 = new Obstacle(canvas.width*0.55, canvas.height*0.60, 60, 20, 0, true, false);
+var ob16 = new Obstacle(canvas.width*0.65, canvas.height*0.60, 60, 20, 0, true, false);
+var ob17 = new Obstacle(canvas.width*0.65, canvas.height*0.40, 60, 20, 0, true, false);
 
-var tempObjects = [hero, ob1, ob2, ob3];
+var ob18 = new Obstacle(canvas.width*0.40, canvas.height*0.35, 45, 20, 0, true, false);
+var ob19 = new Obstacle(canvas.width*0.30, canvas.height*0.35, 45, 20, 0, true, false);
+var ob20 = new Obstacle(canvas.width*0.20, canvas.height*0.35, 45, 20, 0, true, false);
+var ob21 = new Obstacle(canvas.width*0.10, canvas.height*0.35, 45, 20, 0, true, false);
+var ob22 = new Obstacle(canvas.width*0.30, canvas.height*0.15, 60, 20, 0, true, false);
+var ob23 = new Obstacle(canvas.width*0.50, canvas.height*0.15, 80, 20, 0, true, false);
 
-var bub1 = new Bubble(hero, 60, 40, "some text 1", ob1);
-var bub2 = new Bubble(hero, 60, 40, "some text 2", ob2);
 
-var bubbles = [bub1, bub2];
+var tempObjects = [hero, ob1, ob2, ob4, ob5, ob6, ob7, ob8, ob9, ob10, ob11, ob12, ob13, ob14, ob15, ob16, ob17, ob18, ob19, ob20, ob21, ob22, ob23];
+
+var bub1 = new Bubble(hero, "Hi. I'm Fábio Aguiar. \n Let me tell you a bit about myself.", 2, ob1);
+var bub2 = new Bubble(hero, "Gaming has been a part of my life since \nI first played on my Dad’s computer. \n Oh, don't forget to jump here!", 3, ob2);
+var bub3 = new Bubble(hero, "At the time I was very young and probably enjoyed \nthe colours and movement on the screen... Shiny!", 2, ob13);
+var bub4 = new Bubble(hero, "Once I started understanding games,\n they became my favorite source of entertainment.", 2, ob14);
+var bub5 = new Bubble(hero, "And it was around that time that I thought \n“Yeah... I wanna make this kind of stuff when I grow up”.", 2, ob15);
+var bub6 = new Bubble(hero, "I wanted tools. So I decided that when I went \nto college, I’d take a computer science degree.", 2, ob16);
+var bub7 = new Bubble(hero, "I learned several programming languages, AI, algorithms and \na lot of skills that I could apply to game development.", 2, ob17);
+var bub8 = new Bubble(hero, "I experimented with XNA.", 1, ob18);
+var bub9 = new Bubble(hero, "Made some projects on Android \nand iOS with Cocos2D.", 2, ob19);
+var bub10 = new Bubble(hero, "Developed a few prototypes \nof game design concepts.", 2, ob20);
+var bub11 = new Bubble(hero, "And had a swing at \nimplementing basic mechanics.", 2, ob21);
+var bub12 = new Bubble(hero, "But ultimately, I want to develope and \ndesign game with people that are as \npassionate about them as I am.", 2, ob22);
+var bub13 = new Bubble(hero, "So, have a look at my CV and \ncontact me through my email. \nHo you didn't use any cheats to get up here.", 3, ob23);
+
+var bubbles = [bub1, bub2, bub3, bub4, bub5, bub6, bub7, bub8, bub9, bub10, bub11, bub12, bub13];
 
 var drawObjects = function()
 {
 	for(var i = 1; i < tempObjects.length;i++)
 	{
 		//ctx.fillStyle = "black";
+		if(!tempObjects[i].ghostly)
 		ctx.fillRect(tempObjects[i].x, tempObjects[i].y, tempObjects[i].width, tempObjects[i].height);
 	}
 }
@@ -112,23 +145,28 @@ var drawObjects = function()
 
 function drawBubble(bubble)
 {
-	radius = 5;
+	var width = bubble.text.length * 6 / bubble.lines;
+	var height = bubble.lines * 10 + 20;
 
-	tempY = bubble.target.y - bubble.height - 2*radius;
-	tempX = bubble.target.x + bubble.target.width/2;
+	var radius = 5;
+
+	var tempY = bubble.target.y - height - 2*radius;
+	var tempX = bubble.target.x + bubble.target.width/2;
+
+	var textArr = bubble.text.split('\n');
 
 	ctx.beginPath();
 	ctx.strokeStyle="black";
   	ctx.lineWidth="2";
   	ctx.moveTo(tempX + radius, tempY);
-  	ctx.lineTo(tempX + bubble.width - radius, tempY);
-  	ctx.quadraticCurveTo(tempX + bubble.width, tempY, tempX + bubble.width, tempY + radius);
-  	ctx.lineTo(tempX + bubble.width, tempY + bubble.height - radius);
-  	ctx.quadraticCurveTo(tempX + bubble.width, tempY + bubble.height, tempX + bubble.width - radius, tempY + bubble.height);
-  	ctx.lineTo(tempX + 2*radius, tempY + bubble.height);
-  	ctx.lineTo(tempX, tempY + bubble.height + radius);
-  	ctx.lineTo(tempX + radius, tempY + bubble.height);
-  	ctx.quadraticCurveTo(tempX, tempY + bubble.height, tempX, tempY + bubble.height - radius);
+  	ctx.lineTo(tempX + width - radius, tempY);
+  	ctx.quadraticCurveTo(tempX + width, tempY, tempX + width, tempY + radius);
+  	ctx.lineTo(tempX + width, tempY + height - radius);
+  	ctx.quadraticCurveTo(tempX + width, tempY + height, tempX + width - radius, tempY + height);
+  	ctx.lineTo(tempX + 2*radius, tempY + height);
+  	ctx.lineTo(tempX, tempY + height + radius);
+  	ctx.lineTo(tempX + radius, tempY + height);
+  	ctx.quadraticCurveTo(tempX, tempY + height, tempX, tempY + height - radius);
   	ctx.lineTo(tempX, tempY + radius);
   	ctx.quadraticCurveTo(tempX, tempY, tempX + radius, tempY);
   	ctx.stroke();
@@ -136,7 +174,13 @@ function drawBubble(bubble)
   	ctx.font = '11px Arial';
     ctx.textAlign = 'center';
     //ctx.fillStyle = 'blue';
-    ctx.fillText(bubble.text, tempX + (bubble.width / 2), bubble.target.y - (bubble.height / 2) - radius)
+    var pos = bubble.lines - 1;
+    for(var i = 0; i < bubble.lines; i++)
+    {
+    	ctx.fillText(textArr[i], tempX + (width / 2), bubble.target.y - (height / 2) - 10 * pos)
+    	pos--;
+    }
+    
 
 }
 
