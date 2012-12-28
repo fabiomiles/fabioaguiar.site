@@ -113,7 +113,7 @@ var bub9 = new Bubble(hero, "Made some projects on Android \nand iOS with Cocos2
 var bub10 = new Bubble(hero, "Developed a few prototypes \nof game design concepts.", 2, ob20);
 var bub11 = new Bubble(hero, "And had a swing at \nimplementing basic mechanics.", 2, ob21);
 var bub12 = new Bubble(hero, "But ultimately, I want to develope and \ndesign game with people that are as \npassionate about them as I am.", 3, ob22);
-var bub13 = new Bubble(hero, "So, have a look at my CV and \ncontact me through my email. \nHo you didn't use any cheats to get up here.", 3, ob23);
+var bub13 = new Bubble(hero, "So, have a look at my CV and \ncontact me through my email. \nHope you didn't use any cheats to get up here.", 3, ob23);
 
 var bubbles = [bub1, bub2, bub3, bub4, bub5, bub6, bub7, bub8, bub9, bub10, bub11, bub12, bub13];
 
